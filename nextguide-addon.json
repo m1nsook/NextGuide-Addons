@@ -23,5 +23,6 @@
   "permissions": [],
   "entrypoints": {
     "content": "content"
-  }
+  },
+  "icon": "icon.png"
 }
