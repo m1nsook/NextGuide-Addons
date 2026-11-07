@@ -5,7 +5,7 @@ Create independently maintained add-ons for [NextGuide](https://github.com/m1nso
 ## Make an add-on
 
 1. Choose **Use this template** or fork this repository.
-2. Edit nextguide-addon.json: choose a unique publisher.addon id, actual repository URL, version, license and compatibility.
+2. Edit nextguide-addon.json: choose a unique publisher.addon id, actual repository URL, version, license and compatibility. On GitHub Actions, the manifest repository must match the repository running the validator.
 3. Put Markdown pages under content/. No executable MDX, install scripts or unsafe hooks in this first content-only template.
 4. Run `node scripts/validate-addon.mjs` and `node --test test/validate-addon.test.mjs` locally.
 5. Submit your repository URL and an immutable commit SHA using the [NextGuide submission template](https://github.com/m1nsook/NextGuide/issues/new?template=submit-your-addon.md).

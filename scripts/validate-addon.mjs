@@ -44,7 +44,7 @@ function scanContent(directory, root, found) {
     } else throw Error("Unsupported filesystem entry: " + relative(root, full))
   }
 }
-export function validateAddon(rootDir = process.cwd()) {
+export function validateAddon(rootDir = process.cwd(), expectedRepository = null) {
   const root = realpathSync(resolve(rootDir))
   const manifestPath = join(root, "nextguide-addon.json")
   if (lstatSync(manifestPath).isSymbolicLink()) throw Error("Manifest cannot be a symbolic link")
@@ -64,6 +64,9 @@ export function validateAddon(rootDir = process.cwd()) {
   }
   string(m.repository, "repository")
   if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/.test(m.repository)) throw Error("repository must be a GitHub HTTPS repository URL")
+  if (expectedRepository && m.repository.replace(/\/$/, "").toLowerCase() !== ("https://github.com/" + expectedRepository).toLowerCase()) {
+    throw Error("Manifest repository does not match the GitHub repository running validation")
+  }
   string(m.license, "license", 2, 80)
   if (!CATEGORIES.has(m.category)) throw Error("Invalid category")
   if (!Array.isArray(m.keywords) || m.keywords.length < 1 || m.keywords.length > 12 || new Set(m.keywords).size !== m.keywords.length ||
@@ -83,7 +86,7 @@ export function validateAddon(rootDir = process.cwd()) {
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    const result = validateAddon(process.argv[2] || process.cwd())
+    const result = validateAddon(process.argv[2] || process.cwd(), process.env.GITHUB_ACTIONS === "true" ? process.env.GITHUB_REPOSITORY : null)
     console.log("Valid manifest and content:", result.id, result.version, "(" + result.files + " Markdown files)")
     console.log("Static checks only. Independent registry review is still required.")
   } catch (err) {
