@@ -5,6 +5,7 @@ import { createHash } from "node:crypto"
 import { gzipSync } from "node:zlib"
 import { readFileSync, readdirSync, lstatSync, writeFileSync, mkdirSync } from "node:fs"
 import { join, resolve, relative, sep, dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 import { validateAddon } from "./validate-addon.mjs"
 
 const sha256 = bytes => createHash("sha256").update(bytes).digest("hex")
@@ -161,6 +162,6 @@ export async function main(argv=process.argv.slice(2)) {
   }
   await publish(packed,flags)
 }
-if(process.argv[1]&&resolve(process.argv[1])===new URL(import.meta.url).pathname){
+if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   main().catch(e=>{console.error("Add-on publish failed:",e.message);process.exitCode=1})
 }

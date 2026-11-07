@@ -15,4 +15,6 @@ The add-on template does not run arbitrary JavaScript/MDX, shell commands, git h
 
 Planned API points include documentation sources/blocks, theme tokens, icon packs, locale catalogs, AI providers, OAuth providers, integrations and accessibility hooks. An API contract must be versioned and implemented in NextGuide before these can be installed. Do not import fictional SDK methods.
 
+Publish the archive with `bun ng-addon pack` and `bun ng-addon publish`. Only GitHub receives `GITHUB_TOKEN`; NextGuide receives the immutable release URL, commit and SHA-256, then queues it for owner approval. GitHub Issues are not used for publishing.
+
 Maintain a changelog, clear license and source repository. Never commit credentials or private keys.
