@@ -1,0 +1,40 @@
+name: Validate NextGuide add-on
+
+on:
+  pull_request:
+    paths:
+      - "nextguide-addon.json"
+      - "content/**"
+      - "schema/**"
+      - "scripts/**"
+      - "test/**"
+      - ".github/workflows/validate-addon.yml"
+  push:
+    branches: [main]
+    paths:
+      - "nextguide-addon.json"
+      - "content/**"
+      - "schema/**"
+      - "scripts/**"
+      - "test/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: addon-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate manifest and content
+        run: node scripts/validate-addon.mjs
+      - name: Run validator regression tests
+        run: node --test test/validate-addon.test.mjs
