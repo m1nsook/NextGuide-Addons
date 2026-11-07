@@ -70,7 +70,9 @@ export function validateAddon(rootDir = process.cwd(), expectedRepository = null
   string(m.license, "license", 2, 80)
   if (!CATEGORIES.has(m.category)) throw Error("Invalid category")
   string(m.icon, "icon", 5, 160)
-  if (!/^(?:[A-Za-z0-9_-]+\\/)*[A-Za-z0-9_-]+\\.png$/.test(m.icon)) throw Error("Icon must be a relative .png file")
+  const iconParts = m.icon.split("/")
+  if (!m.icon.endsWith(".png") || iconParts.some((part, index) => !/^[A-Za-z0-9_-]+$/.test(
+      index === iconParts.length - 1 ? part.slice(0, -4) : part))) throw Error("Icon must be a relative .png file")
   const iconPath = safePath(root, m.icon, "icon")
   const iconStat = lstatSync(iconPath)
   if (!iconStat.isFile() || iconStat.size < 45 || iconStat.size > 256 * 1024) throw Error("Icon must be a PNG file of 256 KiB or less")
