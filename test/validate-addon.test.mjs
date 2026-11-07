@@ -33,4 +33,4 @@ test("rejects undeclared runtime permissions", () => using(m => { m.permissions 
 test("rejects executable payload", () => using((m, root) => { writeFileSync(join(root, "content", "script.js"), "console.log('no')") }, root => assert.throws(() => validateAddon(root), /Only .md/)))
 test("rejects symlinks", () => using((m, root) => { symlinkSync(join(root, "content", "index.md"), join(root, "content", "duplicate.md")) }, root => assert.throws(() => validateAddon(root), /Symbolic links/)))
 test("rejects unknown manifest properties", () => using(m => { m.installScript = "unsafe" }, root => assert.throws(() => validateAddon(root), /unknown field/)))
-test("rejects wild compatibility", () => using(m => { m.compatibility.nextguide = "*" }, root => assert.throws(() => validateAddon(root), /compatibility range/)))
+test("rejects wild compatibility", () => using(m => { m.compatibility.nextguide = "*" }, root => assert.throws(() => validateAddon(root), /compatibility range|compatibility.nextguide/)))
