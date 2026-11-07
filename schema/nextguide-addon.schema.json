@@ -17,7 +17,8 @@
     "keywords",
     "compatibility",
     "permissions",
-    "entrypoints"
+    "entrypoints",
+    "icon"
   ],
   "properties": {
     "$schema": {
@@ -139,6 +140,12 @@
           "maxLength": 160
         }
       }
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.png$",
+      "maxLength": 160,
+      "description": "A local PNG logo (32–1024 pixels, 256 KiB max) shown in the Account Mode marketplace."
     }
   }
 }

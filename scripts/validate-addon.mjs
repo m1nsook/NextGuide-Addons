@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url"
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*\.[a-z0-9]+(?:-[a-z0-9]+)*$/
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/
 const CATEGORIES = new Set(["content", "theme", "icons", "language", "ai", "oauth", "integration", "accessibility", "other"])
-const ROOT_KEYS = ["$schema", "schemaVersion", "id", "name", "summary", "description", "version", "author", "repository", "license", "category", "keywords", "compatibility", "permissions", "entrypoints"]
+const ROOT_KEYS = ["$schema", "schemaVersion", "id", "name", "summary", "description", "version", "author", "repository", "license", "category", "icon", "keywords", "compatibility", "permissions", "entrypoints"]
 
 function object(value, what) {
   if (!value || Array.isArray(value) || typeof value !== "object") throw Error(what + " must be an object")
@@ -69,6 +69,19 @@ export function validateAddon(rootDir = process.cwd(), expectedRepository = null
   }
   string(m.license, "license", 2, 80)
   if (!CATEGORIES.has(m.category)) throw Error("Invalid category")
+  string(m.icon, "icon", 5, 160)
+  const iconParts = m.icon.split("/")
+  if (!m.icon.endsWith(".png") || iconParts.some((part, index) => !/^[A-Za-z0-9_-]+$/.test(
+      index === iconParts.length - 1 ? part.slice(0, -4) : part))) throw Error("Icon must be a relative .png file")
+  const iconPath = safePath(root, m.icon, "icon")
+  const iconStat = lstatSync(iconPath)
+  if (!iconStat.isFile() || iconStat.size < 45 || iconStat.size > 256 * 1024) throw Error("Icon must be a PNG file of 256 KiB or less")
+  const iconBytes = readFileSync(iconPath)
+  if (!iconBytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ||
+      iconBytes.subarray(12, 16).toString("ascii") !== "IHDR" ||
+      iconBytes.readUInt32BE(8) !== 13) throw Error("Icon content must be a PNG")
+  const width = iconBytes.readUInt32BE(16), height = iconBytes.readUInt32BE(20)
+  if (width < 32 || height < 32 || width > 1024 || height > 1024) throw Error("Icon dimensions must be 32–1024 pixels")
   if (!Array.isArray(m.keywords) || m.keywords.length < 1 || m.keywords.length > 12 || new Set(m.keywords).size !== m.keywords.length ||
       !m.keywords.every(k => typeof k === "string" && /^[a-z0-9][a-z0-9-]{1,39}$/.test(k))) throw Error("Invalid keywords")
   object(m.compatibility, "compatibility"); exactKeys(m.compatibility, ["mode", "nextguide"], "compatibility")

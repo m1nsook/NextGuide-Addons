@@ -1,0 +1,9 @@
+{
+  "name": "nextguide-addon-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ng-addon": "node scripts/ng-addon.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}
