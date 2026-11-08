@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, lstatSync, writeFileSync, mkdirSync } from "
 import { join, resolve, relative, sep, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { validateAddon } from "./validate-addon.mjs"
+import { buildV2, packV2, inspectV2Archive } from "./v2-package.mjs"
 
 const sha256 = bytes => createHash("sha256").update(bytes).digest("hex")
 const gitBlob = bytes => createHash("sha1").update(Buffer.from("blob " + bytes.length + "\0")).update(bytes).digest("hex")
@@ -157,7 +158,49 @@ async function publish(packed,flags) {
 export async function main(argv=process.argv.slice(2)) {
   const action=argv[0],flags=options(argv.slice(1))
   if(!action||action==="help"||action==="--help") {
-    console.log("bun ng-addon pack [--output dist/my-addon.tgz]\\nbun ng-addon publish [--commit 40-hex-sha] [--registry https://ngapi.m1nsook.com] [--dry-run]\\nRequires GITHUB_TOKEN for publish. Add-ons must be committed/pushed first.")
+    console.log([
+      "V1 (approved content-only):",
+      "  bun ng-addon pack [--output dist/my-addon.tgz]",
+      "  bun ng-addon publish [--commit 40-hex-sha] [--registry https://ngapi.m1nsook.com] [--dry-run]",
+      "V2 developer lab (not publishable to the v1 registry):",
+      "  bun ng-addon build-v2 [--project examples/v2-server]",
+      "  bun ng-addon validate-v2 [--project examples/v2-server]",
+      "  bun ng-addon pack-v2 [--project examples/v2-server] [--output dist/addon-v2.tgz]",
+      "  bun ng-addon inspect-v2 --archive dist/addon-v2.tgz",
+      "Only the v1 publish command uses GITHUB_TOKEN. V2 must pass independent review."
+    ].join("\n"))
+    return
+  }
+  // V2 is an offline DEVELOPER LAB only. Publishing v2 would bypass the
+  // existing v1-only private registry review/authorization requirements.
+  if(["build-v2","validate-v2","pack-v2","inspect-v2"].includes(action)){
+    const allowed=action==="pack-v2"?["project","output"]:
+      action==="inspect-v2"?["archive"]:["project"]
+    if(Object.keys(flags).some(key=>!allowed.includes(key)))throw Error("Unexpected v2 option")
+    if(action==="build-v2"){
+      const result=buildV2(flags.project||process.cwd())
+      console.log("Compiled local v2 server:",result.entrypoint)
+      return
+    }
+    if(action==="inspect-v2"){
+      if(!flags.archive)throw Error("Pass --archive path for offline v2 inspection")
+      const result=inspectV2Archive(readFileSync(resolve(flags.archive)))
+      console.log("Validated local v2 bundle:",result.manifest.id+"@"+result.manifest.version)
+      console.log("Compiled server SHA-256:",result.serverSha256)
+      console.log("Archive SHA-256:",result.archiveSha256)
+      console.log("NOT registry approved or executable by NextGuide Account Mode.")
+      return
+    }
+    const packed=packV2(flags.project||process.cwd())
+    if(action==="pack-v2"){
+      const file=resolve(flags.output||("dist/"+packed.name))
+      mkdirSync(dirname(file),{recursive:true})
+      writeFileSync(file,packed.archive)
+      console.log("Reproducible v2 development bundle:",file)
+      console.log("Archive SHA-256:",packed.archiveSha256)
+      console.log("Server SHA-256:",packed.serverSha256)
+    } else console.log("V2 source, manifest, hashes and tar contents verified:",packed.manifest.id)
+    console.log("NOT publishable to ngapi v1. Independent v2 review and sandbox approval required.")
     return
   }
   if(!["pack","publish"].includes(action))throw Error("Unknown command: "+action)

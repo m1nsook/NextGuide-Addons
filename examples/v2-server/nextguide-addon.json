@@ -1,0 +1,32 @@
+{
+  "$schema": "../../schema/nextguide-addon-v2.schema.json",
+  "schemaVersion": 2,
+  "id": "template.activation-counter",
+  "name": "Activation Counter",
+  "summary": "Demonstrates capability-controlled storage and a data-only Account Mode admin page.",
+  "description": "A compiled server-side v2 add-on example that requests scoped storage and publishes a declarative admin page through the host broker.",
+  "version": "0.1.0",
+  "author": {
+    "name": "NextGuide example"
+  },
+  "repository": "https://github.com/m1nsook/NextGuide-Addons",
+  "license": "MIT",
+  "category": "integration",
+  "keywords": [
+    "developer",
+    "example",
+    "storage"
+  ],
+  "compatibility": {
+    "mode": "account",
+    "nextguide": ">=1.0.0 <2.0.0"
+  },
+  "permissions": [
+    "storage.read",
+    "storage.write",
+    "admin.pages"
+  ],
+  "entrypoints": {
+    "server": "dist/server.mjs"
+  }
+}

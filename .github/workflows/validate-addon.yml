@@ -5,8 +5,10 @@ on:
     paths:
       - "nextguide-addon.json"
       - "content/**"
+      - "examples/**"
       - "icon.png"
       - "package.json"
+      - "examples/**"
       - "schema/**"
       - "scripts/**"
       - "test/**"
@@ -42,3 +44,8 @@ jobs:
         run: node --test test/*.test.mjs
       - name: Verify distributable add-on archive
         run: node scripts/ng-addon.mjs pack --output /tmp/nextguide-addon-ci.tgz
+      - name: Verify v2 offline developer bundle (never publish it)
+        run: |
+          node scripts/ng-addon.mjs validate-v2 --project examples/v2-server
+          node scripts/ng-addon.mjs pack-v2 --project examples/v2-server --output /tmp/nextguide-v2-ci.tgz
+          node scripts/ng-addon.mjs inspect-v2 --archive /tmp/nextguide-v2-ci.tgz
