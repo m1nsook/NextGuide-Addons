@@ -1,52 +1,50 @@
 # NextGuide Add-ons — official developer template
 
-Build independently maintained, **content-only Account Mode** add-ons without changing NextGuide core.
+Build independently maintained **content-only NextGuide Account Mode** add-ons without editing the framework. The current publishable format supports Markdown and a local PNG icon. React, MDX, TypeScript and server code extensions are not yet accepted by the registry.
 
-## Create your first add-on
+## Get started
 
-1. Select **Use this template → Create a new repository** on GitHub. Your add-on repository must be **public** so the registry can independently verify its releases.
-2. Edit `nextguide-addon.json`:
-   - Choose your permanent `publisher.addon-slug` ID.
-   - Replace `repository` with **your new repository URL** (not the template URL).
-   - Fill in author, license, version, summary and supported NextGuide versions.
-   - Keep `compatibility.mode` as `account`, and `permissions` as `[]`.
-3. Replace `icon.png` with your own PNG icon (32–1024 px; at most 256 KiB), and keep the `icon` field pointing to it.
-4. Put one or more plain `.md` files in `content/`. No executable MDX, JavaScript, scripts or privileged hooks are supported.
-5. Run the commands below, then commit and push your manifest, icon and content changes.
+1. Choose **Use this template → Create a new repository** on GitHub. Keep the new repository public for release verification.
+2. Edit `nextguide-addon.json` with your permanent `publisher.addon-name` ID, your actual repository URL, author, version, license and compatibility.
+3. Replace `icon.png` with your own PNG (32–1024 pixels, maximum 256 KiB).
+4. Put one or more plain `.md` files in `content/`. No executable scripts or MDX.
+5. Commit and push all changed files to your repository.
+
+## Validate and pack locally
 
 ```bash
 bun test
 bun ng-addon pack
 ```
 
-`pack` creates `dist/nextguide-addon-VERSION.tgz` and prints its SHA-256. It does not publish.
+The pack command creates a versioned `.tgz` archive and reports its SHA-256. It does not publish.
 
-## Publish to the verified registry
+## Publish with GitHub
 
-Create a **fine-grained GitHub token** scoped to your own add-on repository with **Contents: read/write**. Make it available locally as `GITHUB_TOKEN` or `GH_TOKEN`. Never commit a token or send one to the registry.
+Open the [NextGuide Publisher GitHub App](https://github.com/apps/nextguide-publisher), sign in with GitHub, select your repository and submit your verified release for independent review. **You do not need a personal access token for the web publisher.**
 
-```bash
-bun ng-addon publish --dry-run
-bun ng-addon publish --registry https://ngapi.m1nsook.com
-```
+The publisher verifies the source, creates or reuses a matching immutable GitHub Release asset, and shows your submission status. Validation reports multiple source issues together, with explicit fixes for safe metadata changes.
 
-The publisher:
+An uploaded GitHub Release is not the same as registry approval. Only reviewed versions appear in the signed catalog.
 
-1. Verifies that every local packaged file matches a pinned, pushed GitHub commit.
-2. Creates a versioned GitHub Release with an immutable `.tgz` asset.
-3. Submits the public repository, release tag, exact commit SHA, archive URL and SHA-256 to the separate ngapi registry.
-4. Reports a `pending` review ID on HTTP 202. Only the protected owner dashboard can approve or reject it.
+## Updates and withdrawal
 
-**Retry safely:** If the GitHub Release was uploaded but registry submission failed, rerun `bun ng-addon publish` once the service is available. The CLI reuses the existing asset **only** if its GitHub SHA-256, size and URL are identical. It never overwrites a published version. Bump SemVer when the source changes.
+To update, increment the manifest SemVer version, commit and push the changes, then submit again. Do not overwrite an existing versioned asset. A retry may reuse an artifact only when its size and SHA-256 digest match.
 
-**Deployment status (November 2026):** The public read-only API and protected reviewer queue are running, but public `POST /v1/submissions` is currently restricted by nginx during security rollout. A publishing attempt can upload its GitHub Release yet receive HTTP 403 from ngapi until the operator enables submissions. You can still prepare, validate, pack, and run the dry-run checks now.
+Verified publishers can withdraw their own add-ons. Withdrawn versions are no longer offered as new installations; review history and GitHub Releases are preserved.
 
-## What add-ons can do today
+## Current capabilities
 
-The first add-on format is **Markdown content only**. Categories such as themes, icons, languages, AI, OAuth and integrations are placeholders for future separately permissioned extension APIs; selecting those categories does not grant executable capabilities.
+| Feature | Status |
+| --- | --- |
+| Manifest validation and content-only packaging | Supported |
+| GitHub App publishing, review, updates and withdrawal | Supported |
+| Signed approved release catalog | Supported |
+| Installed-site Account Mode marketplace | In development |
+| Executable React, MDX, server, AI or OAuth add-ons | Not yet supported |
 
-The installed-site Account Mode marketplace, installer, enable/disable, update and rollback features are **not complete yet**. The ngapi `/admin` dashboard is a private review queue, not a user-facing marketplace.
+The single `nextguide` package contains foundation APIs for future extensions. This is **not** permission to publish or execute third-party JavaScript.
 
-Read [authoring](docs/AUTHORING.md), [review policy](docs/REVIEW.md), and the [manifest schema](schema/nextguide-addon.schema.json).
+See [NextGuide Add-ons documentation](https://m1nsook.github.io/NextGuide/addons/), [authoring](docs/AUTHORING.md), [review policy](docs/REVIEW.md), [manifest schema](schema/nextguide-addon.schema.json), and [security policy](SECURITY.md).
 
-The validator GitHub workflow only checks source quality; passing CI is not publication approval. The workflow has a 4-minute timeout and uses a read-only token. No public-registry server code, environment files, webhook URLs or credentials are stored in this repository.
+This public template does not contain private registry code, credentials, operator-only URLs or deployment settings.
