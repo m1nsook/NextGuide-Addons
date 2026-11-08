@@ -120,17 +120,29 @@ async function publish(packed,flags) {
     })
   }
   const match=(release.assets||[]).find(x=>x.name===packed.name)
-  if(match)throw Error("Release already has an artifact with this name. Releases must be immutable; bump the version.")
-  const upload=new URL("https://uploads.github.com/repos/"+owner+"/"+repo+"/releases/"+release.id+"/assets")
-  upload.searchParams.set("name",packed.name)
-  const uploaded=await fetch(upload,{method:"POST",headers:{
-    "Authorization":"Bearer "+token,"Accept":"application/vnd.github+json",
-    "Content-Type":"application/gzip","Content-Length":String(packed.archive.length),
-    "User-Agent":"nextguide-addon-cli/1"
-  },body:packed.archive,signal:AbortSignal.timeout(30000)})
-  if(!uploaded.ok)throw Error("GitHub asset upload failed: HTTP "+uploaded.status)
-  const asset=await uploaded.json()
-  if(asset.browser_download_url!==target)throw Error("Unexpected GitHub artifact URL")
+  if(match) {
+    // A release can exist even when the registry is temporarily unavailable.
+    // GitHub's immutable asset digest lets us safely resume the submission
+    // without overwriting a published version or uploading a different archive.
+    if(match.state!=="uploaded" || match.digest!=="sha256:"+packed.sha256 ||
+       match.size!==packed.archive.length || match.browser_download_url!==target) {
+      throw Error("Existing GitHub Release asset differs from local source, or has no verifiable SHA-256. Do not overwrite a published version; check the release and bump the version for changed content.")
+    }
+    console.log("Reusing identical verified GitHub Release asset:",target)
+  } else {
+    const upload=new URL("https://uploads.github.com/repos/"+owner+"/"+repo+"/releases/"+release.id+"/assets")
+    upload.searchParams.set("name",packed.name)
+    const uploaded=await fetch(upload,{method:"POST",headers:{
+      "Authorization":"Bearer "+token,"Accept":"application/vnd.github+json",
+      "Content-Type":"application/gzip","Content-Length":String(packed.archive.length),
+      "User-Agent":"nextguide-addon-cli/1"
+    },body:packed.archive,signal:AbortSignal.timeout(30000)})
+    if(!uploaded.ok)throw Error("GitHub asset upload failed: HTTP "+uploaded.status)
+    const asset=await uploaded.json()
+    if(asset.browser_download_url!==target || (asset.digest && asset.digest!=="sha256:"+packed.sha256)) {
+      throw Error("GitHub asset URL or SHA-256 did not match the published archive")
+    }
+  }
   const api=new URL(flags.registry||"https://ngapi.m1nsook.com")
   if(api.protocol!=="https:" && !(api.protocol==="http:"&&["127.0.0.1","localhost"].includes(api.hostname)))throw Error("Registry URL requires HTTPS")
   const endpoint=new URL("/v1/submissions",api)

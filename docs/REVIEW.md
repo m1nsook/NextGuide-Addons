@@ -1,14 +1,15 @@
 # Registry review and release policy
 
-A contributor's repository is not the registry. Contributors never get write access to NextGuide core.
+**Registry status:** The separate `ngapi.m1nsook.com` registry has a signed read-only catalog and a Cloudflare Access-protected owner review dashboard. Public publisher submissions are currently blocked at nginx until production hardening is finished. The installed-site Account Mode marketplace and installer are not ready.
 
-1. Author publishes an immutable commit and SemVer release, then files a submission.
-2. A **trusted** verifier fetches that SHA, ignores potentially modified author-provided CI validators, and checks schema, compatibility, paths, size, license, content and provenance.
-3. Human security review is required before admitting executable/capability-bearing modules, even when tests pass.
-4. The reviewed immutable SHA, manifest digest and file hashes are published by a restricted registry publisher.
-5. NextGuide Account Mode accepts only approved releases, verifies digest, requests new permissions, and records an audit trail.
-6. Enable, disable, uninstall and update are transactional and support rollback. Revocations block future installs; existing installs receive a warning.
-7. New upstream commits never install automatically. A new version is only offered after review. NextGuide npm releases are independent.
+1. A developer publishes a public GitHub commit and a SemVer Release containing a content-only `.tgz`.
+2. The registry independently verifies the exact commit, package manifest, PNG, Markdown, artifact SHA-256 and GitHub Release provenance. Developer-provided CI results are not trusted as verification.
+3. Submission enters the **pending** queue and notifies the registry owner.
+4. The owner independently reviews and approves or rejects a release; approval re-checks the source and updates the Ed25519-signed registry.
+5. Approved metadata becomes visible through the public catalog and signed index. It **does not yet install automatically**.
+6. Future Account Mode clients must pin the registry signing key, verify both signature and exact archive hash, enforce compatibility and declared permissions, and support transactional rollback.
+7. Each update requires a new higher SemVer and independent review. Revoked versions must not be offered as new installs.
 
-Static checking cannot prove arbitrary plugin code safe; no server-side evaluation of untrusted JS or node:vm sandboxing. The proposed ngapi.m1nsook.com registry is a future, not a working service.
+Developer submissions do not give write access to NextGuide core or owner secrets. Nothing in the current template may execute untrusted third-party code or import arbitrary runtime dependencies.
 
+No server application, owner dashboard implementation, deployment config or secrets belong in the public NextGuide or NextGuide-Addons repositories.
