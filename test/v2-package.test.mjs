@@ -112,3 +112,30 @@ test("already approved v1 manifest is never silently packaged as executable v2",
     assert.throws(()=>packV2(f.root),/Invalid v2 server manifest/)
   }finally{f.cleanup()}
 })
+
+test("first-party v2 example exercises brokered storage and a declarative admin view", async()=>{
+  const {activate}=await import("../examples/v2-server/src/server.js")
+  const stored=new Map()
+  const calls=[]
+  const request=async(method,params={})=>{
+    calls.push(method)
+    if(method==="extension.info")return {id:"template.activation-counter",version:"0.1.0",apiVersion:1}
+    if(method==="storage.get")return stored.get(params.key)??null
+    if(method==="storage.set"){stored.set(params.key,params.value);return {written:true}}
+    if(method==="contribution.publish"){
+      assert.equal(params.kind,"admin.page")
+      assert.equal(params.descriptor.view.type,"card")
+      assert.equal(params.descriptor.view.children[0].type,"heading")
+      assert.match(params.descriptor.view.children[1].text,/activated 1 times/)
+      return {published:true}
+    }
+    throw Error("unexpected capability request: "+method)
+  }
+  const cleanup=await activate({request})
+  assert.equal(typeof cleanup,"function")
+  assert.deepEqual(calls,[
+    "extension.info","storage.get","storage.set","contribution.publish"
+  ])
+  assert.equal(stored.get("activations"),1)
+  cleanup()
+})
