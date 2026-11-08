@@ -33,6 +33,25 @@ To update, increment the manifest SemVer version, commit and push the changes, t
 
 Verified publishers can withdraw their own add-ons. Withdrawn versions are no longer offered as new installations; review history and GitHub Releases are preserved.
 
+## Executable v2 developer lab
+
+You can now **author and build real server-side JavaScript/TypeScript extensions**
+locally, bundle their code with source provenance and per-file SHA-256 hashes,
+and inspect the deterministic archive **without executing the code**.
+
+The sample in [examples/v2-server](examples/v2-server) demonstrates a brokered
+storage counter and a declarative Account Mode admin page.
+
+    bun ng-addon build-v2 --project examples/v2-server
+    bun ng-addon pack-v2 --project examples/v2-server --output dist/example-v2.tgz
+    bun ng-addon inspect-v2 --archive dist/example-v2.tgz
+
+See the [complete v2 developer guide](docs/V2-DEVELOPER.md) for JavaScript,
+TypeScript, manifest schema, trust limits and independent review requirements.
+**The existing private ngapi currently accepts v1 only.** V2 bundles cannot
+be published or installed until independent executable review, signed registry
+metadata and secure host execution are ready.
+
 ## Current capabilities
 
 | Feature | Status |
@@ -41,7 +60,8 @@ Verified publishers can withdraw their own add-ons. Withdrawn versions are no lo
 | GitHub App publishing, review, updates and withdrawal | Supported |
 | Signed approved release catalog | Supported |
 | Installed-site Account Mode marketplace | In development |
-| Executable React, MDX, server, AI or OAuth add-ons | Not yet supported |
+| Server JS/TS authoring, reproducible v2 packaging and offline inspection | Developer lab (not publishable) |
+| Executable React, MDX, server, AI or OAuth marketplace installation | Not yet supported |
 
 The single `nextguide` package contains foundation APIs for future extensions. This is **not** permission to publish or execute third-party JavaScript.
 
