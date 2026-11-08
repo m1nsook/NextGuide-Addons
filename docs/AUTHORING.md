@@ -13,12 +13,12 @@
 - `entrypoints.content`: A relative directory containing only `.md` files (at least one).
 - `author` and `license`: Identify the publisher and include appropriate licensing information.
 
-Run `bun test`, then `bun ng-addon pack`. Inspect the resulting SHA-256 archive. Commit and push the manifest, icon and Markdown content before running `bun ng-addon publish --dry-run`.
+Run `bun test`, then `bun ng-addon pack`. Inspect the resulting SHA-256 archive, and commit and push the manifest, icon and Markdown content to your public GitHub repository.
 
-When publication is enabled, `bun ng-addon publish` uploads the archive to the **publisher's own GitHub Release** and sends only public release metadata and hashes to the registry. The GitHub token stays local and is not transmitted to NextGuide.
+Publish using the [NextGuide Publisher GitHub App](https://github.com/apps/nextguide-publisher). It authenticates with GitHub, verifies the committed source and release, and requests independent review. The browser workflow does not require a personal access token.
 
-If the artifact exists but submission fails, the CLI can safely retry only when GitHub's asset digest, byte size and download URL match the local archive. Do not modify or replace an existing Release asset.
+If an artifact exists but a submission fails, the publisher can reuse it only when GitHub's asset digest, byte size and download URL match the verified archive. Do not modify or replace an existing Release asset.
 
 Unreviewed scripts, executable MDX, OAuth handlers, network access, and arbitrary JavaScript are not supported. A versioned permission model and sandbox API must be implemented before enabling such categories.
 
-See the complete [NextGuide documentation](https://m1nsook.github.io/NextGuide/docs/addons/).
+See the complete [NextGuide documentation](https://m1nsook.github.io/NextGuide/addons/).
