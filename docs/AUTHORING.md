@@ -1,20 +1,24 @@
 # Add-on authoring
 
-The authoritative file is `nextguide-addon.json`. The v1 validator only accepts content-only Account Mode packages.
+`nextguide-addon.json` is the authoritative manifest. The first package format accepts **Account Mode, content-only** add-ons.
 
-- id: publisher-qualified lowercase identifier; permanent across releases.
-- version: SemVer; increment for every published release.
-- compatibility.mode: account, always.
-- compatibility.nextguide: explicit semver interval (for example >=1.0.0 <2.0.0).
-- category: content, theme, icons, language, ai, oauth, integration, accessibility or other. This is descriptive, not an executable entitlement.
-- permissions: empty until a permissioned runtime exists.
-- icon: required relative path to your own branded PNG icon (the template supplies `icon.png`). Prefer a square transparent 256×256 file. PNG size limit: 256 KiB; width/height: 32–1024 pixels. The icon is included in the release artifact, verified against your immutable commit and shown on cards/detail pages in the authenticated Account Mode marketplace. Remote image URLs and SVG icons are not yet permitted.
-- entrypoints.content: a clean relative directory containing only .md files.
+- `id`: Permanent publisher-qualified lowercase identifier, e.g. `acme.my-docs`.
+- `version`: SemVer; every changed Release must increment the version.
+- `repository`: The public GitHub HTTPS repository containing the exact commit and published Release. **Change it from the template URL**.
+- `compatibility.mode`: Always `account` for now.
+- `compatibility.nextguide`: An explicit SemVer interval, e.g. `>=1.0.0 <2.0.0`. This is a future 1.x example; NextGuide alpha does not yet have an add-on installer.
+- `category`: A descriptive label. It is not permission to execute arbitrary code.
+- `permissions`: Must be `[]`.
+- `icon`: Relative path to a local PNG. Use your own icon; 32–1024 px, maximum 256 KiB; a 256×256 square works well. Remote images and SVG are not supported.
+- `entrypoints.content`: A relative directory containing only `.md` files (at least one).
+- `author` and `license`: Identify the publisher and include appropriate licensing information.
 
-The add-on template does not run arbitrary JavaScript/MDX, shell commands, git hooks or post-install scripts.
+Run `bun test`, then `bun ng-addon pack`. Inspect the resulting SHA-256 archive. Commit and push the manifest, icon and Markdown content before running `bun ng-addon publish --dry-run`.
 
-Planned API points include documentation sources/blocks, theme tokens, icon packs, locale catalogs, AI providers, OAuth providers, integrations and accessibility hooks. An API contract must be versioned and implemented in NextGuide before these can be installed. Do not import fictional SDK methods.
+When publication is enabled, `bun ng-addon publish` uploads the archive to the **publisher's own GitHub Release** and sends only public release metadata and hashes to the registry. The GitHub token stays local and is not transmitted to NextGuide.
 
-Publish the archive with `bun ng-addon pack` and `bun ng-addon publish`. Only GitHub receives `GITHUB_TOKEN`; NextGuide receives the immutable release URL, commit and SHA-256, then queues it for owner approval. GitHub Issues are not used for publishing.
+If the artifact exists but submission fails, the CLI can safely retry only when GitHub's asset digest, byte size and download URL match the local archive. Do not modify or replace an existing Release asset.
 
-Maintain a changelog, clear license and source repository. Never commit credentials or private keys.
+Unreviewed scripts, executable MDX, OAuth handlers, network access, and arbitrary JavaScript are not supported. A versioned permission model and sandbox API must be implemented before enabling such categories.
+
+See the complete [NextGuide documentation](https://m1nsook.github.io/NextGuide/docs/addons/).
