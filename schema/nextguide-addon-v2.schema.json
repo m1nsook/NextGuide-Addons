@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NextGuide v2 executable server add-on (development format; NOT publishable to v1 ngapi)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "version",
+    "category",
+    "repository",
+    "compatibility",
+    "permissions",
+    "entrypoints"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 100
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/?$"
+    },
+    "license": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "category": {
+      "enum": [
+        "content",
+        "theme",
+        "icons",
+        "language",
+        "ai",
+        "oauth",
+        "integration",
+        "accessibility",
+        "other"
+      ]
+    },
+    "keywords": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 12,
+      "items": {
+        "type": "string",
+        "maxLength": 40
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "nextguide"
+      ],
+      "properties": {
+        "mode": {
+          "const": "account"
+        },
+        "nextguide": {
+          "type": "string",
+          "pattern": "^>=\\d+\\.\\d+\\.\\d+\\s+<\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 16,
+      "items": {
+        "enum": [
+          "docs.pages",
+          "mdx.blocks",
+          "ui.components",
+          "admin.pages",
+          "theme.tokens",
+          "icons.packs",
+          "i18n.locales",
+          "ai.providers",
+          "auth.providers",
+          "server.routes",
+          "server.jobs",
+          "storage.read",
+          "storage.write",
+          "network.fetch",
+          "secrets.read"
+        ]
+      }
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "server"
+      ],
+      "properties": {
+        "server": {
+          "const": "dist/server.mjs"
+        }
+      }
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.png$"
+    }
+  }
+}
