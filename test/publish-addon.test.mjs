@@ -10,11 +10,11 @@ import { main, packAddon } from "../scripts/ng-addon.mjs"
 const commit = "b".repeat(40)
 const treeSha = "c".repeat(40)
 const repoBase = "https://api.github.com/repos/example/hello-world"
-function sha(bytes) { return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\\0")).update(bytes).digest("hex") }
+function sha(bytes) { return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\0")).update(bytes).digest("hex") }
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "ng-publish-"))
   mkdirSync(join(root,"content"))
-  writeFileSync(join(root,"content","index.md"),"# Hello world!\\n")
+  writeFileSync(join(root,"content","index.md"),"# Hello world!\n")
   writeFileSync(join(root,"icon.png"),readFileSync(new URL("../icon.png", import.meta.url)))
   writeFileSync(join(root,"nextguide-addon.json"),JSON.stringify({
     schemaVersion:1,id:"example.hello-world",name:"Hello World",
